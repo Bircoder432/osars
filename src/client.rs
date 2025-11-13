@@ -1,5 +1,8 @@
 use crate::api::{CollegeQuery, CollegesQuery};
+use crate::colleges::{CampusQuery, CampusesQuery};
 use crate::error::Result;
+use crate::groups::GroupQuery;
+use crate::{GroupsQuery, ScheduleQuery};
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -54,6 +57,35 @@ impl Client {
         } else {
             let body = response.text().await?;
             Err(crate::error::Error::from_response(status.as_u16(), body))
+        }
+    }
+    pub fn campuses(&self) -> CampusesQuery {
+        match self.default_college_id {
+            Some(college_id) => CampusesQuery::new(self, college_id),
+            None => panic!("No default college set"),
+        }
+    }
+
+    pub fn groups(&self, campus_id: u32) -> GroupsQuery {
+        GroupsQuery::new(self, campus_id)
+    }
+
+    pub fn schedule(&self, group_id: u32) -> ScheduleQuery {
+        ScheduleQuery::new(self, group_id)
+    }
+
+    pub fn today(&self, group_id: u32) -> ScheduleQuery {
+        self.schedule(group_id).today()
+    }
+
+    pub fn tomorrow(&self, group_id: u32) -> ScheduleQuery {
+        self.schedule(group_id).tomorrow()
+    }
+
+    pub fn campus(&self, campus_id: u32) -> CampusQuery {
+        match self.default_college_id {
+            Some(college_id) => CampusQuery::new(self, campus_id),
+            None => panic!("No default college set. Use client.with_college() first"),
         }
     }
 }

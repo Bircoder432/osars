@@ -1,4 +1,4 @@
-use crate::{Campus, Client, error::Result};
+use crate::{Campus, Client, error::Result, groups::GroupQuery};
 
 pub struct CampusesQuery<'a> {
     client: &'a Client,
@@ -39,5 +39,9 @@ impl<'a> CampusQuery<'a> {
 
     pub fn groups(self) -> crate::api::groups::GroupsQuery<'a> {
         crate::api::groups::GroupsQuery::new(self.client, self.campus_id)
+    }
+
+    pub fn group(self, group_id: u32) -> GroupQuery<'a> {
+        GroupQuery::new(self.client, group_id)
     }
 }

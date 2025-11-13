@@ -1,3 +1,5 @@
+use super::ScheduleQuery;
+use crate::models::Week;
 use crate::{Client, Group, error::Result};
 
 pub struct GroupsQuery<'a> {
@@ -39,5 +41,21 @@ impl<'a> GroupQuery<'a> {
 
     pub fn schedules(self) -> crate::api::schedules::ScheduleQuery<'a> {
         crate::api::schedules::ScheduleQuery::new(self.client, self.group_id)
+    }
+
+    pub fn today(self) -> ScheduleQuery<'a> {
+        self.schedules().today()
+    }
+
+    pub fn tomorrow(self) -> ScheduleQuery<'a> {
+        self.schedules().tomorrow()
+    }
+
+    pub fn date(self, date: &str) -> ScheduleQuery<'a> {
+        self.schedules().date(date)
+    }
+
+    pub fn week(self, week: Week) -> ScheduleQuery<'a> {
+        self.schedules().week(week)
     }
 }

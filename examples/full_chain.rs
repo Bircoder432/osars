@@ -3,14 +3,10 @@ use osapi::{Client, Week, Weekday};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = Client::new("https://api.thisishyum.ru/schedule_api/tyumen/");
+    let client = Client::new("https://api.thisishyum.ru/schedule_api/tyumen/").with_college(1);
 
     let schedule = client
-        .colleges()
-        .college(1)
-        .campuses()
         .campus(1)
-        .groups()
         .group(34)
         .schedules()
         .today()

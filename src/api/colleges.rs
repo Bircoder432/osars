@@ -37,6 +37,10 @@ impl<'a> CollegeQuery<'a> {
     pub fn campuses(self) -> CampusesQuery<'a> {
         CampusesQuery::new(self.client, self.college_id)
     }
+
+    pub fn campus(self, campus_id: u32) -> CampusQuery<'a> {
+        CampusQuery::new(self.client, campus_id)
+    }
 }
 
 pub struct CampusesQuery<'a> {
@@ -78,5 +82,8 @@ impl<'a> CampusQuery<'a> {
 
     pub fn groups(self) -> GroupsQuery<'a> {
         GroupsQuery::new(self.client, self.campus_id)
+    }
+    pub fn group(self, group_id: u32) -> crate::api::groups::GroupQuery<'a> {
+        crate::api::groups::GroupQuery::new(self.client, group_id)
     }
 }
