@@ -27,6 +27,9 @@ pub struct Client {
 }
 
 impl Client {
+    pub fn base_url(&self) -> &str {
+        &self.base_url
+    }
     /// Creates a new client with the specified base URL.
     ///
     /// # Arguments
@@ -167,7 +170,7 @@ impl Client {
         Ok(CampusQuery::new(self, campus_id))
     }
 
-    pub(crate) async fn get_json<T>(&self, path: &str) -> Result<T>
+    pub async fn get_json<T>(&self, path: &str) -> Result<T>
     where
         T: serde::de::DeserializeOwned,
     {
