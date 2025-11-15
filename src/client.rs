@@ -1,8 +1,6 @@
-use crate::api::{CollegeQuery, CollegesQuery};
-use crate::colleges::{CampusQuery, CampusesQuery};
+use crate::api::{CampusQuery, CampusesQuery, CollegeQuery, CollegesQuery};
 use crate::error::Result;
-use crate::groups::GroupQuery;
-use crate::{GroupsQuery, ScheduleQuery};
+use crate::{GroupsQuery, ScheduleQuery, error::Error};
 
 #[derive(Debug, Clone)]
 pub struct Client {
@@ -37,11 +35,25 @@ impl Client {
         CollegesQuery::new(self)
     }
 
-    pub fn college(&self) -> CollegeQuery {
-        match self.default_college_id {
-            Some(college_id) => CollegeQuery::new(self, college_id),
-            None => panic!("No default college set. Use client.with_college() first"),
-        }
+    pub fn college(&self) -> Result<CollegeQuery> {
+        let college_id = self.default_college_id.ok_or_else(|| {
+            Error::Validation(("No default college set. Use client.with_college() firsh".into()))
+        })?;
+        Ok(CollegeQuery::new(self, college_id))
+    }
+
+    pub fn campuses(&self) -> Result<CampusesQuery> {
+        let college_id = self
+            .default_college_id
+            .ok_or_else(|| Error::Validation(("No default college set".into())))?;
+        Ok(CampusesQuery::new(self, college_id))
+    }
+
+    pub fn campus(&self, campus_id: u32) -> Result<CampusQuery> {
+        let _ = self.default_college_id.ok_or_else(|| {
+            Error::Validation("No default college set. Use client.with_college() first".into())
+        })?;
+        Ok(CampusQuery::new(self, campus_id))
     }
 
     pub(crate) async fn get_json<T>(&self, path: &str) -> Result<T>
@@ -59,12 +71,6 @@ impl Client {
             Err(crate::error::Error::from_response(status.as_u16(), body))
         }
     }
-    pub fn campuses(&self) -> CampusesQuery {
-        match self.default_college_id {
-            Some(college_id) => CampusesQuery::new(self, college_id),
-            None => panic!("No default college set"),
-        }
-    }
 
     pub fn groups(&self, campus_id: u32) -> GroupsQuery {
         GroupsQuery::new(self, campus_id)
@@ -80,12 +86,5 @@ impl Client {
 
     pub fn tomorrow(&self, group_id: u32) -> ScheduleQuery {
         self.schedule(group_id).tomorrow()
-    }
-
-    pub fn campus(&self, campus_id: u32) -> CampusQuery {
-        match self.default_college_id {
-            Some(college_id) => CampusQuery::new(self, campus_id),
-            None => panic!("No default college set. Use client.with_college() first"),
-        }
     }
 }

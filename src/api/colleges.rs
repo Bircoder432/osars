@@ -1,6 +1,7 @@
 use std::fmt::format;
 
 use crate::{Campus, Client, College, api::groups::GroupsQuery, error::Result};
+use urlencoding::encode;
 
 pub struct CollegesQuery<'a> {
     client: &'a Client,
@@ -51,7 +52,6 @@ impl<'a> CollegeQuery<'a> {
     pub fn new(client: &'a Client, college_id: u32) -> Self {
         Self { client, college_id }
     }
-
     pub async fn get(self) -> Result<College> {
         self.client
             .get_json(&format!("/colleges/{}", self.college_id))
@@ -70,17 +70,30 @@ impl<'a> CollegeQuery<'a> {
 pub struct CampusesQuery<'a> {
     client: &'a Client,
     college_id: u32,
+    name: Option<String>,
 }
 
 impl<'a> CampusesQuery<'a> {
     pub fn new(client: &'a Client, college_id: u32) -> Self {
-        Self { client, college_id }
+        Self {
+            client,
+            college_id,
+            name: None,
+        }
+    }
+
+    pub fn name(mut self, name: &str) -> Self {
+        self.name = Some(name.to_string());
+        self
     }
 
     pub async fn send(self) -> Result<Vec<Campus>> {
-        self.client
-            .get_json(&format!("/colleges/{}/campuses", self.college_id))
-            .await
+        let mut url = format!("/colleges/{}/campuses", self.college_id);
+
+        if let Some(name) = self.name {
+            url = format!("{}?name={}", url, encode(&name));
+        }
+        self.client.get_json(&url).await
     }
 
     pub fn campus(self, campus_id: u32) -> CampusQuery<'a> {
